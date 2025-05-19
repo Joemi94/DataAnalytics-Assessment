@@ -172,3 +172,99 @@ Determine the **last transaction date per account owner**, calculate **days of i
    - Engagement targeting
    - Dormancy monitoring
    - Business strategy insights
+#### Question 4 – Estimating Customer Lifetime Value (CLV)
+####📖 Scenario:
+The Marketing Team wants to estimate Customer Lifetime Value (CLV) using a simplified model based on how long an account has been active (tenure) and how often the user transacts.
+
+####🎯 Task:
+For each customer:
+
+Calculate account tenure in months (from signup).
+
+Count total transactions and sum transaction values.
+
+Compute CLV using the formula:
+CLV = (total_transactions / tenure_in_months) * 12 * avg_profit_per_transaction
+where profit per transaction = 0.1% of the transaction value.
+
+#### 🧾 Tables Used:
+users_customuser
+
+savings_savingsaccount
+
+#### 🛠️ Approach:
+Join users with transactions:
+
+Use LEFT JOIN to associate each user (users_customuser) with their transactions (savings_savingsaccount) via owner_id.
+
+Tenure Calculation:
+
+Compute tenure in months using TIMESTAMPDIFF(MONTH, signup_date, current_date).
+
+Transaction Aggregation:
+
+Use COUNT() for total number of transactions.
+
+Use SUM(amount) to get the total transaction value.
+
+Profit Estimation:
+
+Assume profit per transaction = 0.001 × average transaction value.
+
+Calculate avg_profit_per_transaction as SUM(amount) / COUNT(*) * 0.001.
+
+CLV Formula Application:
+
+Insert values into the given CLV formula.
+
+Use CASE statements to avoid divide-by-zero errors (e.g., tenure = 0).
+
+Sorting:
+
+Order users by estimated_clv in descending order to rank most valuable customers.
+
+#### 🧩 SQL Summary:
+GROUP BY ensures customer-level aggregation.
+
+LEFT JOIN ensures even users without transactions are considered.
+
+DATEDIFF() and TIMESTAMPDIFF() help derive tenure and inactivity.
+
+Profit and CLV metrics are computed using simple mathematical expressions within SQL.
+#### 🚧 Challenges:
+Challenge 1: Division by zero for tenure
+
+Description: Users with 0-month tenure (e.g., just signed up) could trigger divide-by-zero errors in the CLV formula.
+
+Resolution: Wrapped CLV logic in a CASE statement to prevent calculations when tenure equals 0.
+
+Challenge 2: Users with no transactions
+
+Description: Users with zero transactions must still appear in the result set (with zero CLV), but aggregate functions can return NULL or incorrect results.
+
+Resolution: Used LEFT JOIN to preserve all users and COALESCE to default NULL sums/counts to zero.
+
+Challenge 3: Profit calculation logic
+
+Description: Translating the "0.1% profit per transaction" into an SQL-computable formula required clarity on using transaction value, not count.
+
+Resolution: Calculated average transaction value (SUM / COUNT) and multiplied by 0.001 to estimate profit.
+
+#### 🧰 How to Use
+Prepare your MySQL environment with the required tables:
+
+users_customuser (with a valid signup date column, e.g., created_on)
+
+savings_savingsaccount (with valid owner_id, transaction_date, and amount)
+
+Run the CLV estimation query to generate a per-user customer value model.
+
+Use outputs for:
+
+CLV-based customer segmentation
+
+LTV modeling for marketing spend
+
+Retention strategies based on tenure vs. activity
+
+Identifying high-value customers for upselling or loyalty campaigns
