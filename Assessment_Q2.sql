@@ -1,3 +1,6 @@
+-- Selecting the existing database
+USE adashi_staging;
+
 -- preview customer table
 SELECT *
 FROM users_customuser
